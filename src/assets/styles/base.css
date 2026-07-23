@@ -209,7 +209,7 @@ textarea {
   padding: 10px 20px;
   font-weight: 600;
   color: var(--color-text-secondary);
-  background: var(--color-neutral-50);
+  background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   white-space: nowrap;
 }

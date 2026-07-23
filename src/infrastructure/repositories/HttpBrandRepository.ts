@@ -32,8 +32,13 @@ export class HttpBrandRepository implements BrandRepository {
   }
 
   async findAll(): Promise<Brand[]> {
-    const dtos = await this.http.get<BrandDto[]>(endpoints.brands)
-    return dtos.map(toBrand)
+    try {
+      const dtos = await this.http.get<BrandDto[]>(endpoints.brands)
+      return dtos.map(toBrand)
+    } catch (error) {
+      if (error instanceof DomainError && error.statusCode === 404) return []
+      throw error
+    }
   }
 
   async findById(id: ID): Promise<Brand | null> {

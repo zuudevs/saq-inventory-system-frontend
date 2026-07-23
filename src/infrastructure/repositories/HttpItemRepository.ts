@@ -53,8 +53,13 @@ export class HttpItemRepository implements ItemRepository {
   }
 
   async findAll(): Promise<Item[]> {
-    const dtos = await this.http.get<ItemDto[]>(endpoints.items)
-    return dtos.map(toItem)
+    try {
+      const dtos = await this.http.get<ItemDto[]>(endpoints.items)
+      return dtos.map(toItem)
+    } catch (error) {
+      if (error instanceof DomainError && error.statusCode === 404) return []
+      throw error
+    }
   }
 
   async findById(id: ID): Promise<Item | null> {

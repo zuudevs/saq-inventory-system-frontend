@@ -37,8 +37,13 @@ export class HttpCategoryRepository implements CategoryRepository {
   }
 
   async findAll(): Promise<Category[]> {
-    const dtos = await this.http.get<CategoryDto[]>(endpoints.categories)
-    return dtos.map(toCategory)
+    try {
+      const dtos = await this.http.get<CategoryDto[]>(endpoints.categories)
+      return dtos.map(toCategory)
+    } catch (error) {
+      if (error instanceof DomainError && error.statusCode === 404) return []
+      throw error
+    }
   }
 
   async findById(id: ID): Promise<Category | null> {

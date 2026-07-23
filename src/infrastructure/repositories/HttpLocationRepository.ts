@@ -39,8 +39,13 @@ export class HttpLocationRepository implements LocationRepository {
   }
 
   async findAll(): Promise<Location[]> {
-    const dtos = await this.http.get<LocationDto[]>(endpoints.locations)
-    return dtos.map(toLocation)
+    try {
+      const dtos = await this.http.get<LocationDto[]>(endpoints.locations)
+      return dtos.map(toLocation)
+    } catch (error) {
+      if (error instanceof DomainError && error.statusCode === 404) return []
+      throw error
+    }
   }
 
   async findById(id: ID): Promise<Location | null> {

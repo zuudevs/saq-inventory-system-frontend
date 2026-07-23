@@ -39,11 +39,6 @@ const router = createRouter({
           component: () => import('@/presentation/views/LocationsView.vue'),
         },
         {
-          path: 'theme',
-          name: 'theme',
-          component: () => import('@/presentation/views/ThemeView.vue'),
-        },
-        {
           path: ':pathMatch(.*)*',
           name: 'not-found',
           component: () => import('@/presentation/views/NotFoundView.vue'),

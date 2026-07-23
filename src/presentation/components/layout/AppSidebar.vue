@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   MapPin,
   Package,
-  Palette,
   Tags,
 } from "lucide-vue-next"
 import SaqBrand from "@/assets/icons/saq-brand.svg";
@@ -40,13 +39,9 @@ const navItems: NavItem[] = [
     to: "/locations",
     label: "Lokasi",
     icon: MapPin,
-  },
-  {
-    to: "/theme",
-    label: "Palet Tema",
-    icon: Palette,
-  },
+  }
 ]
+
 </script>
 
 <template>
@@ -83,12 +78,6 @@ const navItems: NavItem[] = [
         </span>
       </RouterLink>
     </nav>
-
-    <div class="sidebar-footer">
-      <div class="status-dot"></div>
-
-      <span>Tanpa autentikasi</span>
-    </div>
   </aside>
 </template>
 
@@ -241,34 +230,5 @@ const navItems: NavItem[] = [
   flex-shrink: 0;
 
   transition: transform .2s ease;
-}
-
-/* ===========================
-   FOOTER
-=========================== */
-
-.sidebar-footer {
-  padding: 18px 22px;
-
-  border-top: 1px solid var(--color-border);
-
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  font-size: 12px;
-
-  color: var(--color-text-muted);
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-
-  border-radius: 50%;
-
-  background: #22c55e;
-
-  box-shadow: 0 0 10px rgb(34 197 94 / 50%);
 }
 </style>
