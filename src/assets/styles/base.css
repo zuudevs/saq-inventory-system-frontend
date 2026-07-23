@@ -1,0 +1,246 @@
+@import './theme.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font-family: inherit;
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* Scrollbar tipis, konsisten di semua browser berbasis Chromium */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---- Tombol: dipakai global lewat class, bukan komponen, biar ringan ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    opacity 0.15s ease;
+  white-space: nowrap;
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: var(--color-text-on-accent);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+}
+
+.btn-danger {
+  background: var(--color-danger-600);
+  color: #fff;
+}
+.btn-danger:hover:not(:disabled) {
+  background: var(--color-danger-700);
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+/* ---- Form field ---- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+}
+.field-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.field-hint {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+.field-error {
+  font-size: 12px;
+  color: var(--color-danger-600);
+}
+.field-input,
+.field-select,
+.field-textarea {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 13px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  outline: none;
+  transition: border-color 0.15s ease;
+  width: 100%;
+}
+.field-input:focus,
+.field-select:focus,
+.field-textarea:focus {
+  border-color: var(--color-primary);
+}
+.field-textarea {
+  resize: vertical;
+  min-height: 72px;
+  font-family: inherit;
+}
+.field-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ---- Page layout ---- */
+.page {
+  padding: var(--space-8);
+  max-width: 1200px;
+}
+
+.page-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.page-search {
+  max-width: 280px;
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.card-padded {
+  padding: var(--space-6);
+}
+
+/* ---- Table ---- */
+.table-wrap {
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.table th {
+  text-align: left;
+  padding: 10px 20px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: var(--color-neutral-50);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+.table td {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  vertical-align: middle;
+}
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+.table tbody tr:hover {
+  background: var(--color-surface-hover);
+}
+.table-actions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+.table-muted {
+  color: var(--color-text-muted);
+}
+
+.state-message {
+  padding: var(--space-8);
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+.state-message.is-error {
+  color: var(--color-danger-600);
+}
+
