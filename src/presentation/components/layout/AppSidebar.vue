@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  ArrowUpDown,
   Boxes,
   LayoutDashboard,
   MapPin,
@@ -39,9 +40,13 @@ const navItems: NavItem[] = [
     to: "/locations",
     label: "Lokasi",
     icon: MapPin,
-  }
+  },
+  {
+    to: "/export-import",
+    label: "Import & Export",
+    icon: ArrowUpDown,
+  },
 ]
-
 </script>
 
 <template>
@@ -124,8 +129,6 @@ const navItems: NavItem[] = [
   background: none;
 
   color: white;
-
-  /* box-shadow: 0 8px 24px rgb(79 70 229 / 25%); */
 }
 
 .brand-logo {

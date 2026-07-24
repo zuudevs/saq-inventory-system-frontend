@@ -27,6 +27,17 @@ export class HttpClient {
     return this.unwrap(this.axiosInstance.post<ApiEnvelope<T>>(url, body))
   }
 
+  async getBlob(url: string): Promise<Blob> {
+    try {
+      const response = await this.axiosInstance.get<Blob>(url, {
+        responseType: 'blob',
+      })
+      return response.data
+    } catch (error) {
+      throw this.toDomainError(error)
+    }
+  }
+
   async postForm<T>(url: string, form: FormData): Promise<T> {
     return this.unwrap(
       this.axiosInstance.post<ApiEnvelope<T>>(url, form, {

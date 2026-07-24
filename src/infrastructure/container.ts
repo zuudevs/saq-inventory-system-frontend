@@ -5,6 +5,7 @@ import { HttpLocationRepository } from './repositories/HttpLocationRepository'
 import { HttpItemRepository } from './repositories/HttpItemRepository'
 import { HttpImageRepository } from './repositories/HttpImageRepository'
 import { HttpMetadataStructureRepository } from './repositories/HttpMetadataStructureRepository'
+import { HttpExportImportRepository } from './repositories/HttpExportImportRepository'
 
 /**
  * Composition root: satu-satunya tempat implementasi konkret repository
@@ -20,4 +21,5 @@ export const container = {
   itemRepository: new HttpItemRepository(httpClient),
   imageRepository: new HttpImageRepository(httpClient),
   metadataStructureRepository: new HttpMetadataStructureRepository(httpClient),
+  exportImportRepository: new HttpExportImportRepository(httpClient),
 }

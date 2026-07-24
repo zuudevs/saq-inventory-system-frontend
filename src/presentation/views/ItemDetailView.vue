@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ArrowLeft } from 'lucide-vue-next'
 import AppTopbar from '@/presentation/components/layout/AppTopbar.vue'
 import StatusBadge from '@/presentation/components/common/StatusBadge.vue'
 import ImageGallery from '@/presentation/components/image/ImageGallery.vue'
@@ -51,8 +52,9 @@ onMounted(async () => {
   <div>
     <AppTopbar :title="item ? item.name : 'Detail Item'">
       <template #actions>
-        <button class="btn btn-ghost" @click="router.push('/items')">
-          ← Kembali
+        <button class="btn btn-ghost btn-with-icon" @click="router.push('/items')">
+          <ArrowLeft :size="16" />
+          <span>Kembali</span>
         </button>
       </template>
     </AppTopbar>
@@ -127,6 +129,12 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.btn-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
 .detail-grid {
   display: grid;
   grid-template-columns: 1.4fr 1fr;

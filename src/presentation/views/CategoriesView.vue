@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { Plus } from 'lucide-vue-next'
 import AppTopbar from '@/presentation/components/layout/AppTopbar.vue'
 import EmptyState from '@/presentation/components/common/EmptyState.vue'
 import ConfirmDialog from '@/presentation/components/common/ConfirmDialog.vue'
@@ -80,8 +81,9 @@ async function confirmDelete() {
   <div>
     <AppTopbar title="Kategori">
       <template #actions>
-        <button class="btn btn-primary" @click="openCreate">
-          + Tambah Kategori
+        <button class="btn btn-primary btn-with-icon" @click="openCreate">
+          <Plus :size="16" />
+          <span>Tambah Kategori</span>
         </button>
       </template>
     </AppTopbar>

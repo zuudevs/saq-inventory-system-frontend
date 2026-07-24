@@ -39,6 +39,11 @@ const router = createRouter({
           component: () => import('@/presentation/views/LocationsView.vue'),
         },
         {
+          path: 'export-import',
+          name: 'export-import',
+          component: () => import('@/presentation/views/ExportImportView.vue'),
+        },
+        {
           path: ':pathMatch(.*)*',
           name: 'not-found',
           component: () => import('@/presentation/views/NotFoundView.vue'),

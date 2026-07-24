@@ -75,4 +75,3 @@ function toggleDarkMode() {
   color: var(--color-text-primary);
 }
 </style>
-

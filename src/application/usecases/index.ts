@@ -5,6 +5,7 @@ import { LocationUseCases } from './location/LocationUseCases'
 import { ItemUseCases } from './item/ItemUseCases'
 import { ImageUseCases } from './image/ImageUseCases'
 import { MetadataStructureUseCases } from './metadataStructure/MetadataStructureUseCases'
+import { ExportImportUseCases } from './exportImport/ExportImportUseCases'
 
 /**
  * Titik akses tunggal ke semua use case aplikasi. Store di presentation
@@ -21,4 +22,5 @@ export const usecases = {
   metadataStructure: new MetadataStructureUseCases(
     container.metadataStructureRepository,
   ),
+  exportImport: new ExportImportUseCases(container.exportImportRepository),
 }

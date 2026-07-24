@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { Plus } from 'lucide-vue-next'
 import AppTopbar from '@/presentation/components/layout/AppTopbar.vue'
 import EmptyState from '@/presentation/components/common/EmptyState.vue'
 import ConfirmDialog from '@/presentation/components/common/ConfirmDialog.vue'
@@ -116,7 +117,10 @@ async function confirmDelete() {
   <div>
     <AppTopbar title="Items">
       <template #actions>
-        <button class="btn btn-primary" @click="openCreate">+ Tambah Item</button>
+        <button class="btn btn-primary btn-with-icon" @click="openCreate">
+          <Plus :size="16" />
+          <span>Tambah Item</span>
+        </button>
       </template>
     </AppTopbar>
 
@@ -155,7 +159,10 @@ async function confirmDelete() {
           description="Tambahkan item inventaris pertama Anda untuk mulai melacak aset."
         >
           <template #action>
-            <button class="btn btn-primary" @click="openCreate">+ Tambah Item</button>
+            <button class="btn btn-primary btn-with-icon" @click="openCreate">
+              <Plus :size="16" />
+              <span>Tambah Item</span>
+            </button>
           </template>
         </EmptyState>
         <div v-else class="table-wrap">
@@ -233,6 +240,11 @@ async function confirmDelete() {
 </template>
 
 <style scoped>
+.btn-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
 .filters {
   display: flex;
   gap: var(--space-2);

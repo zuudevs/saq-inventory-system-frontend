@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { Plus, Star, Trash2 } from 'lucide-vue-next'
 import { useImageStore } from '@/presentation/stores/image.store'
 import { useToast } from '@/presentation/composables/useToast'
 import { DomainError } from '@/domain/entities/common'
 import type { ID } from '@/domain/entities/common'
 
-const props = defineProps<{ itemId: ID }>()
+const props = defineProps<{
+  itemId?: ID
+  locationId?: ID
+}>()
 
 const store = useImageStore()
 const toast = useToast()
@@ -14,10 +18,40 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const storageBase = import.meta.env.VITE_STORAGE_BASE_URL || '/storage'
 
 function resolveUrl(imagePath: string): string {
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath
+  }
   return `${storageBase}/${imagePath}`
 }
 
-onMounted(() => store.fetchForItem(props.itemId))
+const images = computed(() => {
+  if (props.itemId) {
+    return store.byItemId[props.itemId] ?? []
+  }
+  if (props.locationId) {
+    return store.byLocationId[props.locationId] ?? []
+  }
+  return []
+})
+
+async function loadGallery() {
+  if (props.itemId) {
+    await store.fetchForItem(props.itemId)
+  } else if (props.locationId) {
+    await store.fetchForLocation(props.locationId)
+  }
+}
+
+onMounted(() => {
+  loadGallery()
+})
+
+watch(
+  () => [props.itemId, props.locationId],
+  () => {
+    loadGallery()
+  },
+)
 
 function triggerUpload() {
   fileInput.value?.click()
@@ -29,8 +63,12 @@ async function handleFileChange(event: Event) {
   if (!file) return
 
   try {
-    const gallery = store.byItemId[props.itemId] ?? []
-    await store.uploadForItem(props.itemId, file, gallery.length === 0)
+    const isPrimary = images.value.length === 0
+    if (props.itemId) {
+      await store.uploadForItem(props.itemId, file, isPrimary)
+    } else if (props.locationId) {
+      await store.uploadForLocation(props.locationId, file, isPrimary)
+    }
     toast.success('Gambar berhasil diunggah')
   } catch (err) {
     toast.error(err instanceof DomainError ? err.message : 'Gagal mengunggah gambar')
@@ -41,7 +79,12 @@ async function handleFileChange(event: Event) {
 
 async function handleSetPrimary(imageId: ID) {
   try {
-    await store.setPrimary(props.itemId, imageId)
+    if (props.itemId) {
+      await store.setPrimary(props.itemId, imageId)
+    } else if (props.locationId) {
+      await store.setPrimaryForLocation(props.locationId, imageId)
+    }
+    toast.success('Gambar utama diperbarui')
   } catch (err) {
     toast.error(
       err instanceof DomainError ? err.message : 'Gagal menjadikan gambar utama',
@@ -51,7 +94,11 @@ async function handleSetPrimary(imageId: ID) {
 
 async function handleRemove(imageId: ID) {
   try {
-    await store.remove(props.itemId, imageId)
+    if (props.itemId) {
+      await store.remove(props.itemId, imageId)
+    } else if (props.locationId) {
+      await store.removeForLocation(props.locationId, imageId)
+    }
     toast.success('Gambar berhasil dihapus')
   } catch (err) {
     toast.error(err instanceof DomainError ? err.message : 'Gagal menghapus gambar')
@@ -64,11 +111,12 @@ async function handleRemove(imageId: ID) {
     <div class="gallery-header">
       <p class="section-label">Galeri Foto</p>
       <button
-        class="btn btn-ghost btn-sm"
+        class="btn btn-ghost btn-sm btn-with-icon"
         :disabled="store.uploading"
         @click="triggerUpload"
       >
-        {{ store.uploading ? 'Mengunggah…' : '+ Unggah Foto' }}
+        <Plus :size="14" />
+        <span>{{ store.uploading ? 'Mengunggah…' : 'Unggah Foto' }}</span>
       </button>
       <input
         ref="fileInput"
@@ -80,19 +128,12 @@ async function handleRemove(imageId: ID) {
     </div>
 
     <p v-if="store.loading" class="state-message">Memuat galeri…</p>
-    <p
-      v-else-if="!store.byItemId[itemId] || store.byItemId[itemId].length === 0"
-      class="state-message"
-    >
-      Belum ada foto untuk item ini.
+    <p v-else-if="images.length === 0" class="state-message">
+      Belum ada foto yang diunggah.
     </p>
     <div v-else class="grid">
-      <div
-        v-for="image in store.byItemId[itemId]"
-        :key="image.id"
-        class="thumb"
-      >
-        <img :src="resolveUrl(image.imagePath)" :alt="`Foto item #${image.id}`" />
+      <div v-for="image in images" :key="image.id" class="thumb">
+        <img :src="resolveUrl(image.imagePath)" :alt="`Foto #${image.id}`" />
         <span v-if="image.isPrimary" class="primary-badge">Utama</span>
         <div class="thumb-actions">
           <button
@@ -101,10 +142,14 @@ async function handleRemove(imageId: ID) {
             title="Jadikan foto utama"
             @click="handleSetPrimary(image.id)"
           >
-            ★
+            <Star :size="12" />
           </button>
-          <button class="mini-btn mini-btn-danger" title="Hapus" @click="handleRemove(image.id)">
-            ✕
+          <button
+            class="mini-btn mini-btn-danger"
+            title="Hapus"
+            @click="handleRemove(image.id)"
+          >
+            <Trash2 :size="12" />
           </button>
         </div>
       </div>
@@ -113,6 +158,12 @@ async function handleRemove(imageId: ID) {
 </template>
 
 <style scoped>
+.btn-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .gallery-header {
   display: flex;
   align-items: center;
@@ -129,7 +180,7 @@ async function handleRemove(imageId: ID) {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   gap: var(--space-3);
 }
 

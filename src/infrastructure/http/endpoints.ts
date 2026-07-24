@@ -20,4 +20,10 @@ export const endpoints = {
   images: '/images',
   image: (id: number | string) => `/images/${id}`,
   imageUpload: '/images/upload',
+
+  exportsCsv: '/exports/csv',
+  exportsXlsx: '/exports/xlsx',
+  importsXlsx: '/imports/xlsx',
+
+  health: '/health',
 }

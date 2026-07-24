@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import Modal from '@/presentation/components/common/Modal.vue'
 import MetadataFieldInput from './MetadataFieldInput.vue'
 import { useBrandStore } from '@/presentation/stores/brand.store'
@@ -9,6 +9,10 @@ import { useMetadataStructureStore } from '@/presentation/stores/metadataStructu
 import { ITEM_CONDITIONS, ITEM_STATUSES, type Item } from '@/domain/entities/Item'
 import { presentCondition, presentStatus } from '@/presentation/utils/itemPresentation'
 import type { CreateItemPayload, UpdateItemPayload } from '@/domain/entities/Item'
+import {
+  validateMetadataJson,
+  generateMetadataTemplate,
+} from '@/presentation/utils/metadataValidator'
 
 const props = defineProps<{
   open: boolean
@@ -20,6 +24,12 @@ const emit = defineEmits<{
   close: []
   submit: [payload: CreateItemPayload | UpdateItemPayload]
 }>()
+
+const inputMethod = ref<'manual' | 'json'>('manual')
+const jsonText = ref('')
+const validationErrors = ref<string[]>([])
+const validationSuccess = ref(false)
+
 
 const brandStore = useBrandStore()
 const categoryStore = useCategoryStore()
@@ -85,6 +95,64 @@ watch(
     }
   },
 )
+
+watch(
+  () => activeMetadataFields.value,
+  (fields) => {
+    if (fields && fields.length > 0) {
+      jsonText.value = generateMetadataTemplate(fields)
+      handleJsonInput()
+    } else {
+      jsonText.value = ''
+      validationErrors.value = []
+      validationSuccess.value = false
+    }
+  },
+  { immediate: true },
+)
+
+function handleJsonInput() {
+  if (!jsonText.value.trim()) {
+    validationErrors.value = ['JSON tidak boleh kosong.']
+    validationSuccess.value = false
+    Object.keys(metadataValues).forEach((k) => delete metadataValues[k])
+    return
+  }
+  const result = validateMetadataJson(activeMetadataFields.value, jsonText.value)
+  if (result.valid && result.data) {
+    validationErrors.value = []
+    validationSuccess.value = true
+    Object.keys(metadataValues).forEach((k) => delete metadataValues[k])
+    Object.assign(metadataValues, result.data)
+  } else {
+    validationErrors.value = result.errors
+    validationSuccess.value = false
+    Object.keys(metadataValues).forEach((k) => delete metadataValues[k])
+  }
+}
+
+function handleFileUpload(event: Event) {
+  const input = event.target as HTMLInputElement
+  if (!input.files || input.files.length === 0) return
+  const file = input.files[0]
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    if (e.target && typeof e.target.result === 'string') {
+      jsonText.value = e.target.result
+      handleJsonInput()
+    }
+  }
+  reader.readAsText(file)
+  input.value = ''
+}
+
+function copyTemplate() {
+  const template = generateMetadataTemplate(activeMetadataFields.value)
+  navigator.clipboard.writeText(template).then(() => {
+    alert('Template disalin ke papan klip!')
+  })
+}
+
 
 function handleSubmit() {
   if (!form.name.trim() || !form.assetCode.trim() || !form.categoryId) return
@@ -207,13 +275,80 @@ function handleSubmit() {
 
       <template v-if="!editing && activeMetadataFields.length > 0">
         <hr class="divider" />
-        <p class="section-label">Metadata Kategori</p>
-        <MetadataFieldInput
-          v-for="mf in activeMetadataFields"
-          :key="mf.name"
-          :field="mf"
-          v-model="metadataValues[mf.name]"
-        />
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+          <p class="section-label" style="margin-bottom: 0;">Metadata Kategori</p>
+          
+          <div class="input-method-tabs">
+            <button
+              type="button"
+              class="tab-btn"
+              :class="{ active: inputMethod === 'manual' }"
+              @click="inputMethod = 'manual'"
+            >
+              Input Manual
+            </button>
+            <button
+              type="button"
+              class="tab-btn"
+              :class="{ active: inputMethod === 'json' }"
+              @click="inputMethod = 'json'"
+            >
+              Import JSON
+            </button>
+          </div>
+        </div>
+
+        <div v-show="inputMethod === 'manual'">
+          <MetadataFieldInput
+            v-for="mf in activeMetadataFields"
+            :key="mf.name"
+            :field="mf"
+            v-model="metadataValues[mf.name]"
+          />
+        </div>
+
+        <div v-show="inputMethod === 'json'" class="json-import-container">
+          <div class="json-actions">
+            <button type="button" class="btn btn-ghost btn-sm" @click="copyTemplate">
+              Salin Template JSON
+            </button>
+            <label class="btn btn-ghost btn-sm upload-label">
+              <input
+                type="file"
+                accept=".json"
+                style="display: none;"
+                @change="handleFileUpload"
+              />
+              Unggah File JSON
+            </label>
+          </div>
+
+          <textarea
+            v-model="jsonText"
+            class="field-textarea json-textarea"
+            placeholder='{ "key": "value" }'
+            rows="8"
+            style="font-family: monospace;"
+            @input="handleJsonInput"
+          ></textarea>
+
+          <div
+            v-if="validationSuccess"
+            class="validation-box success"
+          >
+            ✓ JSON Valid & siap di-import.
+          </div>
+
+          <div
+            v-else-if="validationErrors.length > 0"
+            class="validation-box error"
+          >
+            <strong>Error Validasi JSON:</strong>
+            <ul class="validation-list">
+              <li v-for="(err, idx) in validationErrors" :key="idx">{{ err }}</li>
+            </ul>
+          </div>
+        </div>
       </template>
 
       <p v-if="editing" class="field-hint edit-note">
@@ -229,7 +364,11 @@ function handleSubmit() {
           type="submit"
           class="btn btn-primary"
           :disabled="
-            submitting || !form.name.trim() || !form.assetCode.trim() || !form.categoryId
+            submitting ||
+            !form.name.trim() ||
+            !form.assetCode.trim() ||
+            !form.categoryId ||
+            (!editing && activeMetadataFields.length > 0 && inputMethod === 'json' && !validationSuccess)
           "
         >
           {{ submitting ? 'Menyimpan…' : 'Simpan' }}
@@ -238,6 +377,7 @@ function handleSubmit() {
     </form>
   </Modal>
 </template>
+
 
 <style scoped>
 .grid-2 {
@@ -267,4 +407,69 @@ function handleSubmit() {
   gap: var(--space-2);
   margin-top: var(--space-2);
 }
+
+.input-method-tabs {
+  display: flex;
+  background: var(--color-surface-hover);
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+}
+.tab-btn {
+  background: transparent;
+  border: none;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: calc(var(--radius-sm) - 1px);
+  color: var(--color-text-muted);
+  transition: all 0.15s ease;
+}
+.tab-btn.active {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.json-import-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.json-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.upload-label {
+  cursor: pointer;
+}
+.json-textarea {
+  font-family: monospace !important;
+  font-size: 12px !important;
+  background: var(--color-bg) !important;
+  border-color: var(--color-border-strong) !important;
+}
+.validation-box {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.validation-box.success {
+  background: rgba(52, 168, 83, 0.1);
+  border: 1px solid rgba(52, 168, 83, 0.4);
+  color: #137333;
+}
+.validation-box.error {
+  background: rgba(234, 67, 53, 0.1);
+  border: 1px solid rgba(234, 67, 53, 0.4);
+  color: #c5221f;
+}
+.validation-list {
+  margin: var(--space-1) 0 0 0;
+  padding-left: var(--space-4);
+}
 </style>
+
